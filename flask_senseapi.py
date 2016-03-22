@@ -118,3 +118,45 @@ class SenseAPI(object):
             users += response["users"]
 
         return users
+
+    def GetGroups(self):
+        parameters = self.api.GroupsGet_Parameters()
+        groups = []
+        done = False
+
+        while not done:
+            if not self.api.GroupsGet(parameters=parameters):
+                current_app.logger.info("Can't Get Groups: {} - {}".format(self.api.getResponseStatus(), self.api.getResponse()))
+                print "Can't Get Groups: {} - {}".format(self.api.getResponseStatus(), self.api.getResponse())
+                raise SenseAPIException()
+
+            response = json.loads(self.api.getResponse())
+            if len(response["groups"]) < parameters["per_page"]:
+                done = True
+            else:
+                parameters["page"] += 1
+
+            groups += response["groups"]
+                
+        return groups
+
+    def GetGroupUsers(self, group_id):
+        parameters = self.api.GroupUsersGet_Parameters()
+
+        users = []
+        done = False
+        while not done:
+            if not self.api.GroupUsersGet(group_id=group_id, parameters=parameters):
+                current_app.logger.info("Can't Get Group Users: {} - {}".format(self.api.getResponseStatus(), self.api.getResponse()))
+                print "Can't Get Group User {}: {} - {}".format(group_id, self.api.getResponseStatus(), self.api.getResponse())
+                raise SenseAPIException()
+
+            response = json.loads(self.api.getResponse())
+            if len(response["users"]) < parameters["per_page"]:
+                done = True
+            else:
+                parameters["page"] += 1
+
+            users += response["users"]
+
+        return users
